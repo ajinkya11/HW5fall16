@@ -23,6 +23,7 @@ Given /^I am on the RottenPotatoes home page$/ do
   expect(result).to be_truthy
  end
 
+
  When /^I have visited the Details about "(.*?)" page$/ do |title|
    visit movies_path
    click_on "More about #{title}"
@@ -46,8 +47,8 @@ Given /^I am on the RottenPotatoes home page$/ do
 # Add a declarative step here for populating the DB with movies.
 
 Given /the following movies have been added to RottenPotatoes:/ do |movies_table|
-  pending  # Remove this statement when you finish implementing the test step
   movies_table.hashes.each do |movie|
+    Movie.create!(movie)
     # Each returned movie will be a hash representing one row of the movies_table
     # The keys will be the table headers and the values will be the row contents.
     # Entries can be directly to the database with ActiveRecord methods
@@ -56,19 +57,63 @@ Given /the following movies have been added to RottenPotatoes:/ do |movies_table
 end
 
 When /^I have opted to see movies rated: "(.*?)"$/ do |arg1|
+  
+  uncheck("ratings_G")
+  uncheck("ratings_PG")
+  uncheck("ratings_PG-13")
+  uncheck("ratings_R")
+  uncheck("ratings_NC-17")
+  
   # HINT: use String#split to split up the rating_list, then
   # iterate over the ratings and check/uncheck the ratings
   # using the appropriate Capybara command(s)
-  pending  #remove this statement after implementing the test step
+  arg1.split(',').each do |rating|
+    check 'ratings_' + rating.strip
+  end
+  
+  
 end
 
 Then /^I should see only movies rated: "(.*?)"$/ do |arg1|
-  pending  #remove this statement after implementing the test step
+  rating_hash={}
+  arg1.split(',').each do |rating|
+    find('table').should have_css('td', :text => rating)
+    rating_hash[rating]=1
+  end
+  Movie.all_ratings.each do |rating|
+    if !rating_hash.has_key?(rating)
+      find('table').should have_no_css('tb', :text => rating)
+    end
+  end  
 end
 
 Then /^I should see all of the movies$/ do
-  pending  #remove this statement after implementing the test step
+  rows=0
+  find('table').find('tbody').all('tr').each do |tr|
+    rows+=1
+  end
+  rows.should == Movie.all.count 
+end
+
+When /^I have sorted the movies by title$/ do
+  click_on "title_header"
+end
+
+When /^I follow "(.*)"$/ do |link|
+  click_link link
+end
+
+Then /^I should see "(.*?)" before "(.*?)"/ do |title1, title2|
+  titles = values_from_column 'Title'
+
+  expect(titles.index(title1)).to be < titles.index(title2), "expected '#{title1}' to appears before '#{title2}' in the page"
+end
+
+def values_from_column(column_name)
+  position = "count(//thead/tr/th[text() = '#{column_name}']/preceding-sibling::th) + 1"
+
+  all(:xpath, "//tbody/tr/td[#{position}]").map(&:text)
 end
 
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -23,7 +23,12 @@ Background: movies have been added to database
 
 Scenario: sort movies alphabetically
   # your scenario here
-
+  
+  When I have sorted the movies by title
+  Then I should see "Chocolat" before "The Terminator"
+ 
+  
 Scenario: sort movies in increasing order of release date
   # your scenario here
-
+  When I follow "Release Date"
+  Then I should see "Raiders of the Lost Ark" before "Amelie"

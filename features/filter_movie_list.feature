@@ -24,7 +24,7 @@ Background: movies have been added to RottenPotatoes
 Scenario: restrict to movies with 'PG' or 'R' ratings
   When I have opted to see movies rated: "PG, R"
   Then I should see only movies rated: "PG, R"
-
+  
 Scenario: all ratings selected
   When I have opted to see movies rated: "G, PG, PG-13, R"
   Then I should see all of the movies 
